@@ -1,0 +1,93 @@
+2026-01-03 — Chose domain-driven folder boundaries
+
+Decision
+Organised the codebase around domain boundaries (Product, Inventory, Cart, Order, Payment) rather than technical layers alone.
+
+Reason
+Business rules evolve faster than frameworks. Domain boundaries reduce coupling and make reasoning about invariants easier.
+
+Trade-offs (trade-off — a balance between two competing factors)
+
+Slightly more upfront structure
+
+Higher cognitive load for beginners
+
+Consequences
+
+Easier refactoring
+
+Clear ownership of business rules
+
+Scales better as complexity grows
+
+2026-01-03 — Monetary values stored as integers
+
+Decision
+All monetary values are stored as integers representing the smallest currency unit (e.g. cents).
+
+Reason
+Avoids floating-point precision errors in calculations and comparisons.
+
+Trade-offs
+
+Requires formatting at the presentation layer
+
+Consequences
+
+Financial correctness
+
+Safer calculations in transactions
+
+2026-01-03 — Inventory managed via stock movements
+
+Decision
+Inventory is tracked using a stock_movements table instead of directly mutating stock counts.
+
+Reason
+Allows auditing, debugging, and reconciliation of stock changes over time.
+
+Trade-offs
+
+Slightly more complex queries
+
+Consequences
+
+Full traceability
+
+Easier to debug discrepancies
+
+2026-01-03 — Cart implemented as a price snapshot
+
+Decision
+Cart items store product price and tax at the time they are added.
+
+Reason
+Prices and taxes can change; orders must reflect what the customer saw.
+
+Trade-offs
+
+Data duplication
+
+Consequences
+
+Correct historical orders
+
+Fewer edge-case disputes
+
+2026-01-03 — Payment handled asynchronously
+
+Decision
+Payment confirmation relies on webhooks and background jobs rather than synchronous responses.
+
+Reason
+External systems are unreliable; async processing improves resilience.
+
+Trade-offs
+
+More complex flow
+
+Consequences
+
+Fault tolerance
+
+Better scalability
