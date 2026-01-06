@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('response_hash');
+            $table->string('request_hash');
+            $table->string('action');
             $table->timestamp('created_at');
         });
     }
