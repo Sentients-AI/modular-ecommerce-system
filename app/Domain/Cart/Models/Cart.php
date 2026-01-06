@@ -46,6 +46,14 @@ final class Cart extends BaseModel
     }
 
     /**
+     * Get the cart items.
+     */
+    public function cartItem(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    /**
      * Get the total number of items in the cart.
      */
     public function getTotalItemsAttribute(): int
