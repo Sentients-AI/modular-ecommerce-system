@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Payment\Models;
 
 use App\Domain\Order\Models\Order;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Shared\Models\BaseModel;
+use Database\Factories\PaymentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Payment extends BaseModel
 {
@@ -33,7 +36,7 @@ final class Payment extends BaseModel
     /**
      * Get the order that owns the payment.
      */
-    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
@@ -43,7 +46,7 @@ final class Payment extends BaseModel
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === PaymentStatus::Pending;
     }
 
     /**
@@ -51,7 +54,7 @@ final class Payment extends BaseModel
      */
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->status === PaymentStatus::Capture;
     }
 
     /**
@@ -59,7 +62,7 @@ final class Payment extends BaseModel
      */
     public function hasFailed(): bool
     {
-        return $this->status === 'failed';
+        return $this->status === PaymentStatus::Failed;
     }
 
     /**
@@ -68,7 +71,7 @@ final class Payment extends BaseModel
     public function markAsCompleted(string $transactionId, ?array $gatewayResponse = null): self
     {
         $this->update([
-            'status' => 'completed',
+            'status' => PaymentStatus::Capture,
             'transaction_id' => $transactionId,
             'gateway_response' => $gatewayResponse,
             'paid_at' => now(),
@@ -83,7 +86,7 @@ final class Payment extends BaseModel
     public function markAsFailed(?array $gatewayResponse = null): self
     {
         $this->update([
-            'status' => 'failed',
+            'status' => PaymentStatus::Failed,
             'gateway_response' => $gatewayResponse,
             'failed_at' => now(),
         ]);
@@ -94,9 +97,9 @@ final class Payment extends BaseModel
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): \Database\Factories\PaymentFactory
+    protected static function newFactory(): PaymentFactory
     {
-        return \Database\Factories\PaymentFactory::new();
+        return PaymentFactory::new();
     }
 
     /**
@@ -111,6 +114,7 @@ final class Payment extends BaseModel
             'gateway_response' => 'array',
             'paid_at' => 'datetime',
             'failed_at' => 'datetime',
+            'status' => PaymentStatus::class,
         ];
     }
 }

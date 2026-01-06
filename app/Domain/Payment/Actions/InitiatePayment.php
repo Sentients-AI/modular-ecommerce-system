@@ -6,6 +6,7 @@ namespace App\Domain\Payment\Actions;
 
 use App\Domain\Order\Models\Order;
 use App\Domain\Payment\DTOs\PaymentData;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
@@ -26,7 +27,7 @@ final class InitiatePayment
                 'payment_gateway' => $data->paymentGateway,
                 'amount' => $data->amount,
                 'currency' => $data->currency,
-                'status' => 'pending',
+                'status' => PaymentStatus::Pending,
             ]);
 
             // Here you would integrate with actual payment gateway

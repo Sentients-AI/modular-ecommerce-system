@@ -2,7 +2,13 @@
 
 namespace App\Domain\Payment\Enums;
 
-class PaymentStatus
+enum PaymentStatus: string
 {
+    case Pending = 'pending';
+    case Authorized = 'authorized';
+    case Capture = 'capture';
+    case Failed  = 'failed';
+    case Refunded  = 'refunded';
+
 
 }

@@ -71,7 +71,7 @@ final class Order extends BaseModel
      */
     public function isPending(): bool
     {
-        return $this->status === 'pending';
+        return $this->status === OrderStatus::Pending;
     }
 
     /**
@@ -79,7 +79,7 @@ final class Order extends BaseModel
      */
     public function isCompleted(): bool
     {
-        return $this->status === 'completed';
+        return $this->status === OrderStatus::Fulfilled;
     }
 
     /**
@@ -87,7 +87,7 @@ final class Order extends BaseModel
      */
     public function isCancelled(): bool
     {
-        return $this->status === 'cancelled';
+        return $this->status === OrderStatus::Cancelled;
     }
 
     /**
