@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Actions;
 
+use App\Domain\Cart\Exceptions\EmptyCartException;
 use App\Domain\Cart\Models\Cart;
 use App\Domain\Inventory\Actions\ReserveStock;
 use App\Domain\Inventory\DTOs\ReserveStockData;
@@ -35,7 +36,7 @@ final readonly class CreateOrderFromCart
                 ->findOrFail($data->cartId);
 
             if ($cart->isEmpty()) {
-                throw new Exception('Cannot create order from empty cart');
+                throw new EmptyCartException('Cannot create order from empty cart');
             }
 
             // Calculate totals

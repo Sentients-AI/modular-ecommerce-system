@@ -6,6 +6,7 @@ namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Inventory\DTOs\ReserveStockData;
 use App\Domain\Inventory\Enums\StockMovementType;
+use App\Domain\Inventory\Exceptions\InsufficientStockException;
 use App\Domain\Inventory\Models\Stock;
 use App\Domain\Inventory\Models\StockMovement;
 use Exception;
@@ -27,7 +28,11 @@ final class ReserveStock
                 ->firstOrFail();
 
             if (! $stock->isAvailable($data->quantity)) {
-                throw new Exception('Insufficient stock available for product: '.$data->productId);
+                throw new InsufficientStockException(
+                    productId: $data->productId,
+                    requested: $data->quantity,
+                    available: $stock->quantity_available
+                );
             }
 
             $stock->decrement('quantity_available', $data->quantity);

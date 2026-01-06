@@ -10,7 +10,7 @@ use App\Domain\Inventory\Models\StockMovement;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-final class AdjustStock
+final class AdjustStockAction
 {
     /**
      * Execute the action to adjust stock quantity.

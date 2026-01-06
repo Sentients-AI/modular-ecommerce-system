@@ -9,7 +9,7 @@ use App\Domain\Inventory\Models\Stock;
 use App\Domain\Inventory\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
 
-final class ReleaseStock
+final class ReleaseStockAction
 {
     /**
      * Execute the action to release reserved stock.

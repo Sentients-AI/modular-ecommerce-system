@@ -12,7 +12,7 @@ use App\Domain\Inventory\Models\StockMovement;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
-final class ReserveStock
+final class ReserveStockAction
 {
     /**
      * Execute the action to reserve stock for a product.
