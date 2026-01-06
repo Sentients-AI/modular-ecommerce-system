@@ -49,10 +49,13 @@ final class CartFactory extends Factory
         ]);
     }
 
-    public function withItems(int $count = 1): self
+    public function withProduct(int $productId, int $quantity = 1): self
     {
         return $this->has(
-            CartItem::factory()->count($count),
+            CartItem::factory()->state([
+                'product_id' => $productId,
+                'quantity' => $quantity,
+            ]),
             'items'
         );
     }
