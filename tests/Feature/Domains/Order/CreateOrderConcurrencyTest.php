@@ -3,18 +3,21 @@
 declare(strict_types=1);
 
 use App\Domain\Cart\Models\Cart;
+use App\Domain\Inventory\Exceptions\InsufficientStockException;
 use App\Domain\Inventory\Models\Stock;
 use App\Domain\Order\Actions\CreateOrderFromCart;
 use App\Domain\Order\DTOs\CreateOrderData;
 use App\Domain\Order\Models\Order;
 use App\Domain\User\Models\User;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use Throwable;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-it('test only one order can reserve limited stock', function () {
+it(/**
+ * @throws Exception
+ */ 'test only one order can reserve limited stock', function () {
 
     // Arrange
     $stock = Stock::factory()->create([
@@ -81,3 +84,84 @@ it('prevents duplicate order creation under concurrency', function () {
     $responses->each(fn ($response) => $response->assertStatus(200)
     );
 })->skip('Requires amphp/parallel package for concurrent testing');
+
+it('validates stock before creating order', function () {
+    $stock = Stock::factory()->create([
+        'quantity_available' => 0,
+        'quantity_reserved' => 0,
+    ]);
+
+    $cart = Cart::factory()->withProduct($stock->product_id, 1)->create();
+
+    $action = app(CreateOrderFromCart::class);
+
+    $action->execute(new CreateOrderData(
+        userId: (int) $cart->user_id,
+        cartId: (string) $cart->id,
+        currency: 'USD'
+    ));
+})->throws(InsufficientStockException::class);
+
+it('does not create order when stock validation fails', function () {
+    $stock = Stock::factory()->create([
+        'quantity_available' => 0,
+        'quantity_reserved' => 0,
+    ]);
+
+    $cart = Cart::factory()->withProduct($stock->product_id, 1)->create();
+
+    $action = app(CreateOrderFromCart::class);
+
+    try {
+        $action->execute(new CreateOrderData(
+            userId: (int) $cart->user_id,
+            cartId: (string) $cart->id,
+            currency: 'USD'
+        ));
+    } catch (InsufficientStockException) {
+        // expected
+    }
+
+    expect(Order::query()->count())->toBe(0);
+});
+
+it('throws exception when creating order from completed cart', function () {
+    $stock = Stock::factory()->create([
+        'quantity_available' => 10,
+        'quantity_reserved' => 0,
+    ]);
+
+    $cart = Cart::factory()->withProduct($stock->product_id, 1)->create([
+        'completed_at' => now(),
+    ]);
+
+    $action = app(CreateOrderFromCart::class);
+
+    $action->execute(new CreateOrderData(
+        userId: (int) $cart->user_id,
+        cartId: (string) $cart->id,
+        currency: 'USD'
+    ));
+})->throws(DomainException::class, 'Cannot modify a completed cart');
+
+it('marks cart as completed after successful order creation', function () {
+    $stock = Stock::factory()->create([
+        'quantity_available' => 10,
+        'quantity_reserved' => 0,
+    ]);
+
+    $cart = Cart::factory()->withProduct($stock->product_id, 1)->create();
+
+    expect($cart->isCompleted())->toBeFalse();
+
+    $action = app(CreateOrderFromCart::class);
+    $action->execute(new CreateOrderData(
+        userId: (int) $cart->user_id,
+        cartId: (string) $cart->id,
+        currency: 'USD'
+    ));
+
+    $cart->refresh();
+    expect($cart->isCompleted())->toBeTrue();
+    expect($cart->items()->count())->toBe(0);
+});

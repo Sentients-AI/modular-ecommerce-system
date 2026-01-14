@@ -69,3 +69,63 @@ it('returns existing intent for duplicate idempotency key', function () {
     expect($intent->id)->toBe($existingIntent->id);
     expect($intent->amount)->toBe(3000);
 });
+
+it('returns existing active intent for same order with different idempotency key', function () {
+    $order = Order::factory()->create();
+    $existingIntent = PaymentIntent::factory()->create([
+        'order_id' => $order->id,
+        'idempotency_key' => 'original_key',
+        'amount' => 3000,
+        'status' => PaymentStatus::Processing,
+    ]);
+
+    $mockGateway = Mockery::mock(PaymentGatewayService::class);
+    $mockGateway->shouldNotReceive('createIntent');
+
+    $this->app->instance(PaymentGatewayService::class, $mockGateway);
+
+    $action = app(CreatePaymentIntentAction::class);
+    $intent = $action->execute(new CreatePaymentIntentDTO(
+        orderId: $order->id,
+        amount: 5000,
+        currency: 'USD',
+        idempotencyKey: 'different_key',
+    ));
+
+    expect($intent->id)->toBe($existingIntent->id);
+    expect($intent->amount)->toBe(3000);
+    expect(PaymentIntent::where('order_id', $order->id)->count())->toBe(1);
+});
+
+it('creates new intent when existing intent is in terminal state', function () {
+    $order = Order::factory()->create();
+    PaymentIntent::factory()->create([
+        'order_id' => $order->id,
+        'idempotency_key' => 'failed_key',
+        'amount' => 3000,
+        'status' => PaymentStatus::Failed,
+    ]);
+
+    $mockGateway = Mockery::mock(PaymentGatewayService::class);
+    $mockGateway->shouldReceive('createIntent')
+        ->once()
+        ->andReturn(new ProviderResponse(
+            provider: 'stripe',
+            reference: 'pi_new_123',
+            clientSecret: 'secret_new',
+        ));
+
+    $this->app->instance(PaymentGatewayService::class, $mockGateway);
+
+    $action = app(CreatePaymentIntentAction::class);
+    $intent = $action->execute(new CreatePaymentIntentDTO(
+        orderId: $order->id,
+        amount: 5000,
+        currency: 'USD',
+        idempotencyKey: 'new_key',
+    ));
+
+    expect($intent->amount)->toBe(5000);
+    expect($intent->provider_reference)->toBe('pi_new_123');
+    expect(PaymentIntent::where('order_id', $order->id)->count())->toBe(2);
+});

@@ -9,6 +9,7 @@ use App\Domain\Cart\DTOs\CartItemData;
 use App\Domain\Cart\Models\Cart;
 use App\Domain\Product\Models\Product;
 use App\Domain\User\Models\User;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -71,6 +72,17 @@ describe('AddItemToCart', function () {
         expect($cart->items()->first()->product_id)->toBe($product->id);
         expect($cart->items()->first()->quantity)->toBe(2);
     });
+
+    it('throws exception when adding to completed cart', function () {
+        $cart = Cart::factory()->create(['completed_at' => now()]);
+        $product = Product::factory()->create(['price_cents' => 2500]);
+
+        $action = app(AddItemToCart::class);
+        $action->execute($cart, new CartItemData(
+            productId: (string) $product->id,
+            quantity: 1,
+        ));
+    })->throws(DomainException::class, 'Cannot modify a completed cart');
 
     it('updates quantity for existing item', function () {
         $cart = Cart::factory()->create();
