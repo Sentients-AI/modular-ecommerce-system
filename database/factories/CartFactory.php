@@ -31,22 +31,7 @@ final class CartFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'status' => $this->faker->randomElement(['active', 'converted']),
         ];
-    }
-
-    public function active(): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'active',
-        ]);
-    }
-
-    public function converted(): self
-    {
-        return $this->state(fn (array $attributes) => [
-            'status' => 'converted',
-        ]);
     }
 
     public function withProduct(int $productId, int $quantity = 1): self
@@ -56,6 +41,14 @@ final class CartFactory extends Factory
                 'product_id' => $productId,
                 'quantity' => $quantity,
             ]),
+            'items'
+        );
+    }
+
+    public function withItems(int $count = 1): self
+    {
+        return $this->has(
+            CartItem::factory()->count($count),
             'items'
         );
     }

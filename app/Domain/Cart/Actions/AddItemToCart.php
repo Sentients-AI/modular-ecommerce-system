@@ -38,7 +38,8 @@ final class AddItemToCart
             return $cart->items()->create([
                 'product_id' => $data->productId,
                 'quantity' => $data->quantity,
-                'price' => $price,
+                'price_cents_snapshot' => $price,
+                'tax_cents_snapshot' => (int) ($price * 0.1),
             ]);
         });
     }
