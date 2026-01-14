@@ -6,7 +6,9 @@ namespace App\Domain\Order\Models;
 
 use App\Domain\Product\Models\Product;
 use App\Shared\Models\BaseModel;
+use Database\Factories\OrderItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class OrderItem extends BaseModel
 {
@@ -30,12 +32,14 @@ final class OrderItem extends BaseModel
         'price_cents_snapshot',
         'tax_cents_snapshot',
         'quantity',
+        'is_digital',
+        'is_perishable',
     ];
 
     /**
      * Get the order that owns the item.
      */
-    public function order(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
@@ -43,7 +47,7 @@ final class OrderItem extends BaseModel
     /**
      * Get the product.
      */
-    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
@@ -51,9 +55,9 @@ final class OrderItem extends BaseModel
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): \Database\Factories\OrderItemFactory
+    protected static function newFactory(): OrderItemFactory
     {
-        return \Database\Factories\OrderItemFactory::new();
+        return OrderItemFactory::new();
     }
 
     /**

@@ -30,12 +30,13 @@ final class OrderFactory extends Factory
         return [
             'user_id' => User::factory(),
             'order_number' => 'ORD-'.$this->faker->unique()->bothify('########'),
-            'status' => $this->faker->randomElement(['pending', 'paid', 'cancelled', 'shipped', 'completed']),
+            'status' => $this->faker->randomElement(['pending', 'paid', 'cancelled', 'shipped', 'delivered']),
             'subtotal_cents' => $subtotalCents,
             'tax_cents' => $taxCents,
             'shipping_cost_cents' => $shippingCents,
             'total_cents' => $totalCents,
             'currency' => 'USD',
+            'refunded_amount_cents' => 0,
         ];
     }
 
@@ -56,7 +57,7 @@ final class OrderFactory extends Factory
     public function completed(): self
     {
         return $this->state(fn (array $attributes) => [
-            'status' => 'completed',
+            'status' => 'fulfilled',
         ]);
     }
 

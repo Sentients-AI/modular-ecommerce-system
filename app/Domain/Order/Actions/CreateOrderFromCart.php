@@ -82,7 +82,7 @@ final readonly class CreateOrderFromCart
             // Clear the cart
             $cart->items()->delete();
 
-            return $order->fresh(['items', 'payment']);
+            return $order->fresh(['items']);
         });
     }
 }

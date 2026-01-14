@@ -18,7 +18,7 @@ final class CreateOrderData extends BaseData
         public ?array $shippingAddress = null,
         public ?array $billingAddress = null,
         public ?string $notes = null,
-        public string $currency = 'USD',
+        public string $currency = 'MYR',
     ) {}
 
     /**
@@ -34,7 +34,7 @@ final class CreateOrderData extends BaseData
             shippingAddress: $data['shipping_address'] ?? null,
             billingAddress: $data['billing_address'] ?? null,
             notes: $data['notes'] ?? null,
-            currency: $data['currency'] ?? 'USD',
+            currency: $data['currency'] ?? 'MYR',
         );
     }
 }

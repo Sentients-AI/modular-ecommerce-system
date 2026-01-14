@@ -27,11 +27,10 @@ final readonly class CheckoutAction
             foreach ($cart->items as $item) {
                 $this->reserveStock->execute(
                     productId: $item->product_id,
-                    quantity: $item->quantity
                 );
             }
 
-            $order = Order::create([
+            $order = Order::query()->create([
                 'user_id' => $cart->user_id,
                 'status' => OrderStatus::Pending,
                 'total' => $cart->total(),
