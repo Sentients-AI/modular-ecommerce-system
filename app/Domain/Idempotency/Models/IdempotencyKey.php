@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Idempotency\Models;
 
 use App\Shared\Models\BaseModel;
+use Database\Factories\IdempotencyKeyFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 final class IdempotencyKey extends BaseModel
@@ -26,9 +27,12 @@ final class IdempotencyKey extends BaseModel
     protected $fillable = [
         'key',
         'request_fingerprint',
+        'user_id',
         'response_code',
         'response_body',
         'expires_at',
+        'action',
+        'created_at',
     ];
 
     /**
@@ -50,9 +54,9 @@ final class IdempotencyKey extends BaseModel
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): \Database\Factories\IdempotencyKeyFactory
+    protected static function newFactory(): IdempotencyKeyFactory
     {
-        return \Database\Factories\IdempotencyKeyFactory::new();
+        return IdempotencyKeyFactory::new();
     }
 
     /**
@@ -66,6 +70,10 @@ final class IdempotencyKey extends BaseModel
             'response_code' => 'integer',
             'response_body' => 'array',
             'expires_at' => 'datetime',
+            'action' => 'string',
+            'request_fingerprint' => 'string',
+            'user_id' => 'integer',
+            'created_at' => 'datetime',
         ];
     }
 }

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Idempotency\Actions;
 
 use App\Domain\Idempotency\Models\IdempotencyKey;
+use Illuminate\Database\Eloquent\Model;
 
 final class StoreIdempotencyResultAction
 {
@@ -11,14 +14,24 @@ final class StoreIdempotencyResultAction
         int $userId,
         string $action,
         array $payload,
-        array $response
-    ): void {
-        IdempotencyKey::query()->create([
-            'key' => $key,
-            'user_id' => $userId,
-            'action' => $action,
-            'request_hash' => bcrypt(json_encode($payload)),
-            'response' => $response,
-        ]);
+        int $responseCode,
+        array $responseBody
+    ): IdempotencyKey|Model {
+        $fingerprint = hash('sha256', json_encode($payload));
+
+        return IdempotencyKey::query()->firstOrCreate(
+            [
+                'key' => $key,
+                'action' => $action,
+            ],
+            [
+                'user_id' => $userId,
+                'request_fingerprint' => $fingerprint,
+                'response_code' => $responseCode,
+                'response_body' => $responseBody,
+                'expires_at' => now()->addDay(),
+                'created_at' => now(),
+            ]
+        );
     }
 }
