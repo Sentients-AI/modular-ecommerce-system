@@ -41,9 +41,9 @@ final class ReserveStock
             StockMovement::query()->create([
                 'stock_id' => $stock->id,
                 'product_id' => $data->productId,
-                'type' => StockMovementType::RESERVE,
+                'type' => StockMovementType::Reserve,
                 'quantity' => $data->quantity,
-                'reference_type' => StockMovementType::RESERVE,
+                'reference_type' => 'order',
                 'reference_id' => $data->orderId,
                 'reason' => 'Stock reserved',
             ]);

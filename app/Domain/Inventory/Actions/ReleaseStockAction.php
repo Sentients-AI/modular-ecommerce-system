@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Inventory\DTOs\ReserveStockData;
+use App\Domain\Inventory\Enums\StockMovementType;
 use App\Domain\Inventory\Models\Stock;
 use App\Domain\Inventory\Models\StockMovement;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,7 @@ final class ReleaseStockAction
             StockMovement::query()->create([
                 'stock_id' => $stock->id,
                 'product_id' => $data->productId,
-                'type' => 'release',
+                'type' => StockMovementType::Release,
                 'quantity' => $releaseQuantity,
                 'reference_type' => $data->referenceType,
                 'reference_id' => $data->referenceId,

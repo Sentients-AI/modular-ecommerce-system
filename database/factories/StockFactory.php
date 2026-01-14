@@ -32,6 +32,7 @@ final class StockFactory extends Factory
             'product_id' => Product::factory(),
             'quantity_available' => $this->faker->numberBetween(1, 100),
             'quantity_reserved' => $this->faker->numberBetween(1, 100),
+            'updated_at' => $this->faker->dateTimeBetween('-1 years', 'now'),
         ];
     }
 }

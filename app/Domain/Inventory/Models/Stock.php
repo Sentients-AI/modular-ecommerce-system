@@ -22,8 +22,11 @@ final class Stock extends BaseModel
      */
     public const CREATED_AT = null;
 
+    public $timestamps = true;
+
     protected $attributes = [
         'quantity_reserved' => 0,
+        'quantity_available' => 0,
     ];
 
     /**
@@ -35,6 +38,7 @@ final class Stock extends BaseModel
         'product_id',
         'quantity_available',
         'quantity_reserved',
+        'updated_at',
     ];
 
     /**

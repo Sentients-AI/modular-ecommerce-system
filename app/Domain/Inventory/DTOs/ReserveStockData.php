@@ -12,6 +12,10 @@ final class ReserveStockData extends BaseData
         public int $productId,
         public int $quantity,
         public ?int $orderId = null,
+        public ?string $reason = null,
+        public ?string $statusReason = null,
+        public ?int $referenceId = null,
+        public ?string $referenceType = null,
     ) {}
 
     /**
