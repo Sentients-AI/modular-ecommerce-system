@@ -7,7 +7,10 @@ namespace App\Domain\Product\Models;
 use App\Domain\Category\Models\Category;
 use App\Domain\Inventory\Models\Stock;
 use App\Shared\Models\BaseModel;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Product extends BaseModel
 {
@@ -19,25 +22,26 @@ final class Product extends BaseModel
      * @var array<int, string>
      */
     protected $fillable = [
+        'sku',
         'name',
         'slug',
         'description',
         'short_description',
-        'price',
+        'price_cents',
         'sale_price',
-        'sku',
         'category_id',
         'is_active',
         'is_featured',
         'images',
         'meta_title',
         'meta_description',
+        'currency',
     ];
 
     /**
      * Get the category that owns the product.
      */
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -45,7 +49,7 @@ final class Product extends BaseModel
     /**
      * Get the stock record for the product.
      */
-    public function stock(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function stock(): HasOne
     {
         return $this->hasOne(Stock::class);
     }
@@ -81,9 +85,9 @@ final class Product extends BaseModel
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): \Database\Factories\ProductFactory
+    protected static function newFactory(): ProductFactory
     {
-        return \Database\Factories\ProductFactory::new();
+        return ProductFactory::new();
     }
 
     /**
@@ -94,11 +98,12 @@ final class Product extends BaseModel
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price_cents' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
             'images' => 'array',
+            'meta_description' => 'json',
         ];
     }
 }

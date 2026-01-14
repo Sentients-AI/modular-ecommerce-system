@@ -6,7 +6,10 @@ namespace App\Domain\Category\Models;
 
 use App\Domain\Product\Models\Product;
 use App\Shared\Models\BaseModel;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class Category extends BaseModel
 {
@@ -37,7 +40,7 @@ final class Category extends BaseModel
     /**
      * Get the products for the category.
      */
-    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
@@ -45,7 +48,7 @@ final class Category extends BaseModel
     /**
      * Get the parent category.
      */
-    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
@@ -53,7 +56,7 @@ final class Category extends BaseModel
     /**
      * Get the child categories.
      */
-    public function children(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
     }
@@ -77,9 +80,9 @@ final class Category extends BaseModel
     /**
      * Create a new factory instance for the model.
      */
-    protected static function newFactory(): \Database\Factories\CategoryFactory
+    protected static function newFactory(): CategoryFactory
     {
-        return \Database\Factories\CategoryFactory::new();
+        return CategoryFactory::new();
     }
 
     /**
