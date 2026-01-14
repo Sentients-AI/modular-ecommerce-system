@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Payment\Actions;
 
 use App\Domain\Payment\Contracts\PaymentGatewayService;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\PaymentIntent;
-use Illuminate\Support\Facades\DB;
 use DomainException;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 final readonly class ConfirmPaymentIntentAction
@@ -28,7 +30,7 @@ final readonly class ConfirmPaymentIntentAction
                 $response = $this->gateway->confirmIntent($intent);
 
                 $intent->update([
-                    'status' => PaymentStatus::SUCCEEDED,
+                    'status' => PaymentStatus::Succeeded,
                 ]);
 
             } catch (Throwable $e) {

@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace App\Domain\Payment\Models;
@@ -8,6 +7,8 @@ namespace App\Domain\Payment\Models;
 use App\Domain\Order\Models\Order;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Shared\Models\BaseModel;
+use Database\Factories\PaymentIntentFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,7 +23,7 @@ final class PaymentIntent extends BaseModel
      */
     protected $fillable = [
         'order_id',
-        'provider ',
+        'provider',
         'provider_reference',
         'amount',
         'currency',
@@ -31,6 +32,9 @@ final class PaymentIntent extends BaseModel
         'metadata',
         'expires_at',
         'attempts',
+        'transaction_id',
+        'gateway_response',
+        'failed_at',
     ];
 
     /**
@@ -46,7 +50,7 @@ final class PaymentIntent extends BaseModel
      */
     public function isPending(): bool
     {
-        return $this->status === PaymentStatus::REQUIRES_PAYMENT;
+        return $this->status === PaymentStatus::RequiresPayment;
     }
 
     /**
@@ -54,7 +58,7 @@ final class PaymentIntent extends BaseModel
      */
     public function isCompleted(): bool
     {
-        return $this->status === PaymentStatus::SUCCEEDED;
+        return $this->status === PaymentStatus::Succeeded;
     }
 
     /**
@@ -63,7 +67,7 @@ final class PaymentIntent extends BaseModel
     public function markAsCompleted(string $transactionId, ?array $gatewayResponse = null): self
     {
         $this->update([
-            'status' => PaymentStatus::SUCCEEDED,
+            'status' => PaymentStatus::Succeeded,
             'transaction_id' => $transactionId,
             'gateway_response' => $gatewayResponse,
         ]);
@@ -86,6 +90,14 @@ final class PaymentIntent extends BaseModel
     }
 
     /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): Factory
+    {
+        return PaymentIntentFactory::new();
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -94,6 +106,12 @@ final class PaymentIntent extends BaseModel
     {
         return [
             'status' => PaymentStatus::class,
+            'amount' => 'integer',
+            'attempts' => 'integer',
+            'metadata' => 'array',
+            'gateway_response' => 'array',
+            'expires_at' => 'datetime',
+            'failed_at' => 'datetime',
         ];
     }
 }
