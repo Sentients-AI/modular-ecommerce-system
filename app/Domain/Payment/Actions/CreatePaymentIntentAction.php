@@ -20,10 +20,22 @@ final class CreatePaymentIntentAction
     {
         return DB::transaction(function () use ($dto) {
 
-            // Idempotency guard
+            // Idempotency guard: Same idempotency key returns existing intent
             $existing = PaymentIntent::query()->where('idempotency_key', $dto->idempotencyKey)->first();
             if ($existing) {
                 return $existing;
+            }
+
+            // INVARIANT: Only one active PaymentIntent per order
+            // This prevents multiple payment attempts creating duplicate charges
+            $existingActive = PaymentIntent::query()
+                ->where('order_id', $dto->orderId)
+                ->whereIn('status', [PaymentStatus::RequiresPayment, PaymentStatus::Processing])
+                ->lockForUpdate()
+                ->first();
+
+            if ($existingActive) {
+                return $existingActive;
             }
 
             // Call provider (side effect) first to get provider info
