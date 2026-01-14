@@ -9,7 +9,7 @@
 /.idea
 /.nova
 /.phpunit.cache
-/.vscode
+.vscode
 /.zed
 /auth.json
 /node_modules
@@ -22,3 +22,12 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+dd.md
+DATABASE_SCHEMA.md
+.claude/
+.mcp.json
+CLAUDE.md
+boost.json
+.cursor/
+.junie/
+.gitignore

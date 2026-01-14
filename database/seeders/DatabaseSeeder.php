@@ -27,7 +27,7 @@ final class DatabaseSeeder extends Seeder
             StockMovementSeeder::class,
             CartSeeder::class,
             OrderSeeder::class,
-            PaymentSeeder::class,
+            PaymentIntentSeeder::class,
             IdempotencyKeySeeder::class,
         ]);
 

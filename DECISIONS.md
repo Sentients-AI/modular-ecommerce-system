@@ -6,7 +6,7 @@ Organised the codebase around domain boundaries (Product, Inventory, Cart, Order
 Reason
 Business rules evolve faster than frameworks. Domain boundaries reduce coupling and make reasoning about invariants easier.
 
-Trade-offs (trade-off — a balance between two competing factors)
+Trade-offs
 
 Slightly more upfront structure
 
