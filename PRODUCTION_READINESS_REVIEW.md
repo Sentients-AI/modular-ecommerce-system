@@ -32,7 +32,9 @@ This document establishes the trust contract for the Modular E-Commerce System. 
 | No duplicate orders | Idempotency keys with fingerprint validation |
 | No duplicate payments | Single active PaymentIntent per order |
 | No premature stock release | Stock released only after refund succeeds |
-| No invalid state transitions | Enum-based state machines with guards |
+| No invalid state transitions | Enum-based state machines + Specification guards |
+| Type-safe IDs | Identity Value Objects prevent ID confusion |
+| Explicit business rules | Specification pattern with composable validators |
 
 ### Risk Profile
 
@@ -590,5 +592,94 @@ $orderRefundMismatch = Order::query()
 | Order creation | ~500 TPS | Read replicas, caching |
 | Event processing | ~1000 events/sec | Multiple queue workers |
 | Webhook handling | ~100/sec | Horizontal scaling |
+
+---
+
+## 8. DDD Architecture Patterns
+
+### 8.1 Layer Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     HTTP LAYER                           │
+│              Controllers / API Resources                 │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│                APPLICATION LAYER                         │
+│   Use Cases: CheckoutUseCase, RequestRefundUseCase       │
+│   DTOs: CheckoutRequest, RefundResponse (with Value IDs) │
+│   Validates via Specifications before execution          │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│                   DOMAIN LAYER                           │
+│   Actions: CreateOrderFromCart, ReserveStockAction       │
+│   Specifications: OrderIsRefundable, HasSufficientStock  │
+│   Value Objects: OrderId, UserId, CartId                 │
+│   Events: OrderCreated, RefundSucceeded                  │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│               INFRASTRUCTURE LAYER                       │
+│   PaymentGatewayService (Stripe implementation)          │
+│   Eloquent repositories (implicit via models)            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 8.2 Specification Pattern
+
+Business rules are encapsulated in composable Specification classes:
+
+| Pattern | Purpose | Example |
+|---------|---------|---------|
+| `isSatisfiedBy()` | Check if rule passes | `$spec->isSatisfiedBy($order)` |
+| `assertSatisfiedBy()` | Throw if rule fails | Guard in Use Cases |
+| `and()` / `or()` / `not()` | Compose multiple rules | Complex validation |
+| `getFailureReason()` | Human-readable error | API error messages |
+
+**Available Specifications:**
+
+| Domain | Specifications |
+|--------|---------------|
+| Order | `OrderIsRefundable`, `OrderCanTransitionToStatus`, `OrderCanBeCancelled` |
+| Refund | `RefundCanBeApproved`, `RefundCanBeProcessed`, `RefundAmountIsValid` |
+| Cart | `CartIsNotCompleted`, `CartHasItems` |
+| Payment | `PaymentCanBeConfirmed`, `OrderHasNoActivePaymentIntent` |
+| Inventory | `HasSufficientStock` |
+
+### 8.3 Identity Value Objects
+
+Type-safe IDs for all aggregate roots:
+
+| Value Object | Aggregate | Location |
+|--------------|-----------|----------|
+| `OrderId` | Order | `app/Domain/Order/ValueObjects/` |
+| `UserId` | User | `app/Domain/User/ValueObjects/` |
+| `CartId` | Cart | `app/Domain/Cart/ValueObjects/` |
+| `ProductId` | Product | `app/Domain/Product/ValueObjects/` |
+| `PaymentIntentId` | PaymentIntent | `app/Domain/Payment/ValueObjects/` |
+| `RefundId` | Refund | `app/Domain/Refund/ValueObjects/` |
+| `StockId` | Stock | `app/Domain/Inventory/ValueObjects/` |
+
+**Usage:**
+```php
+// Create from int
+$orderId = OrderId::fromInt(123);
+
+// Compare equality (type-safe)
+$orderId->equals($otherOrderId); // true/false
+
+// Convert for queries
+Order::find($orderId->toInt());
+```
+
+### 8.4 Use Cases (Application Layer)
+
+| Use Case | Purpose | Specifications Used |
+|----------|---------|---------------------|
+| `CheckoutUseCase` | Create order + payment intent | `CartIsNotCompleted`, `CartHasItems` |
+| `RequestRefundUseCase` | Initiate refund request | `OrderIsRefundable`, `RefundAmountIsValid` |
+| `ProcessPaymentUseCase` | Confirm payment | `PaymentCanBeConfirmed`, `OrderCanTransitionToStatus` |
 
 ---
