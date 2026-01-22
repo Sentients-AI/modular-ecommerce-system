@@ -216,12 +216,68 @@ Failure in any step must be logged and retried, but must NOT roll back the gatew
 Each invariant must have at least one test proving it holds:
 
 - **INV-ORD-001**: `EmptyCartTest`
-- **INV-ORD-003**: (needs test for backward transition rejection)
+- **INV-ORD-003**: `OrderSpecificationsTest::OrderCanTransitionToStatus validates transitions`
 - **INV-PAY-001**: Webhook idempotency test
 - **INV-REF-001**: `RefundActionsTest::throws exception for unpaid order`
-- **INV-REF-003**: `RefundActionsTest::throws exception for non-approved refund`
+- **INV-REF-003**: `RefundSpecificationsTest::RefundCanBeProcessed is not satisfied for non-approved refunds`
 - **INV-INV-001**: `CreateOrderConcurrencyTest`
 - **INV-INV-003**: `InsufficientStock` test
+
+---
+
+## 9. Specification Pattern Guards
+
+Business rules are now encapsulated in composable Specification classes that provide consistent validation.
+
+### 9.1 Order Specifications
+
+| Specification | Validates | Used By |
+|--------------|-----------|---------|
+| `OrderIsRefundable` | Order status allows refunds | `RequestRefundUseCase` |
+| `OrderCanTransitionToStatus` | Valid state machine transition | `ProcessPaymentUseCase` |
+| `OrderCanBeCancelled` | Order can be cancelled | `CancelOrder` action |
+
+### 9.2 Refund Specifications
+
+| Specification | Validates | Used By |
+|--------------|-----------|---------|
+| `RefundCanBeApproved` | Refund in approvable state | `ApproveRefundAction` |
+| `RefundCanBeProcessed` | Refund has been approved | `ProcessRefundAction` |
+| `RefundAmountIsValid` | Amount > 0 and ≤ remaining | `RequestRefundUseCase` |
+
+### 9.3 Cart Specifications
+
+| Specification | Validates | Used By |
+|--------------|-----------|---------|
+| `CartIsNotCompleted` | Cart not yet checked out | `CheckoutUseCase` |
+| `CartHasItems` | Cart is not empty | `CheckoutUseCase` |
+
+### 9.4 Payment Specifications
+
+| Specification | Validates | Used By |
+|--------------|-----------|---------|
+| `PaymentCanBeConfirmed` | Payment in Processing state | `ProcessPaymentUseCase` |
+| `OrderHasNoActivePaymentIntent` | No duplicate payment intents | `CreatePaymentIntentAction` |
+
+### 9.5 Inventory Specifications
+
+| Specification | Validates | Used By |
+|--------------|-----------|---------|
+| `HasSufficientStock` | Available quantity ≥ requested | `ReserveStockAction` |
+
+### 9.6 Composition Examples
+
+```php
+// Validate refund request with composed specifications
+$spec = (new OrderIsRefundable())
+    ->and(new RefundAmountIsValid($amountCents));
+
+$spec->assertSatisfiedBy($order); // Throws DomainException if not satisfied
+
+// Validate checkout with composed specifications
+$cartSpec = (new CartIsNotCompleted())->and(new CartHasItems());
+$cartSpec->assertSatisfiedBy($cart);
+```
 
 ---
 
