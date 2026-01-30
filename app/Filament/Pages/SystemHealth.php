@@ -62,10 +62,14 @@ final class SystemHealth extends Page
             return collect();
         }
 
+        // Look for duplicate keys with different fingerprints (potential conflicts)
+        // or responses indicating conflicts (4xx status codes)
         return IdempotencyKey::query()
             ->where('created_at', '>', now()->subDay())
-            ->whereNotNull('result')
-            ->where('result', 'like', '%conflict%')
+            ->where(function ($query) {
+                $query->whereIn('response_code', [409, 422, 400])
+                    ->orWhere('response_body', 'like', '%conflict%');
+            })
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();
