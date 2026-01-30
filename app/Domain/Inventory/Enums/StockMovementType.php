@@ -10,16 +10,17 @@ enum StockMovementType: string
     case Out = 'out';
     case Reserve = 'reserve';
     case Release = 'release';
+    case Reconciliation = 'reconciliation';
 
     public static function isValid(string $type): bool
     {
-        return in_array($type, [self::In, self::Out, self::Reserve, self::Release]);
+        return in_array($type, [self::In, self::Out, self::Reserve, self::Release, self::Reconciliation]);
     }
 
     public static function getTypes(): array
     {
         return [
-            self::In, self::Out, self::Reserve, self::Release,
+            self::In, self::Out, self::Reserve, self::Release, self::Reconciliation,
         ];
     }
 }
