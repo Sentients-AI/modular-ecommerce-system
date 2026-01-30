@@ -32,10 +32,10 @@ final class PaymentIntentFactory extends Factory
             'idempotency_key' => $this->faker->unique()->uuid(),
             'attempts' => $this->faker->numberBetween(0, 3),
             'expires_at' => $this->faker->optional()->dateTimeBetween('now', '+7 days'),
-            'metadata' => json_encode([
+            'metadata' => [
                 'client_ip' => $this->faker->ipv4(),
                 'user_agent' => $this->faker->userAgent(),
-            ]),
+            ],
         ];
     }
 }
