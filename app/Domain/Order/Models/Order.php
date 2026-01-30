@@ -6,6 +6,7 @@ namespace App\Domain\Order\Models;
 
 use App\Domain\Order\Enums\OrderStatus;
 use App\Domain\Payment\Models\PaymentIntent;
+use App\Domain\Refund\Models\Refund;
 use App\Domain\User\Models\User;
 use App\Shared\Models\BaseModel;
 use Database\Factories\OrderFactory;
@@ -66,6 +67,14 @@ final class Order extends BaseModel
     public function paymentIntent(): HasOne
     {
         return $this->hasOne(PaymentIntent::class);
+    }
+
+    /**
+     * Get the refunds for this order.
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
     }
 
     /**

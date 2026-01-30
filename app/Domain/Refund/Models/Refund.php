@@ -6,6 +6,7 @@ namespace App\Domain\Refund\Models;
 
 use App\Domain\Order\Models\Order;
 use App\Domain\Refund\Enums\RefundStatus;
+use App\Domain\User\Models\User;
 use DomainException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,6 +38,11 @@ final class Refund extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function approve(int $adminId): void
