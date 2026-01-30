@@ -10,6 +10,7 @@ use App\Shared\Models\BaseModel;
 use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 final class Product extends BaseModel
@@ -52,6 +53,14 @@ final class Product extends BaseModel
     public function stock(): HasOne
     {
         return $this->hasOne(Stock::class);
+    }
+
+    /**
+     * Get the price history records for the product.
+     */
+    public function priceHistories(): HasMany
+    {
+        return $this->hasMany(PriceHistory::class)->orderByDesc('created_at');
     }
 
     /**
